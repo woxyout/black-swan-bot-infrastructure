@@ -1,0 +1,43 @@
+services:
+  bot:
+    image: ghcr.io/woxyout/black-swan-bot-app:${IMAGE_TAG}
+    pull_policy: always
+    restart: unless-stopped
+    init: true
+
+    working_dir: /runtime
+    command: ["python", "/app/bot.py"]
+
+    env_file:
+      - .env
+
+    environment:
+      BOT_TOKEN_FILE: /run/secrets/bot_token
+      GOOGLE_CREDENTIALS_FILE: /run/secrets/google_credentials
+
+    volumes:
+      - type: bind
+        source: ./runtime
+        target: /runtime
+
+    secrets:
+      - bot_token
+      - google_credentials
+
+    security_opt:
+      - no-new-privileges:true
+
+    stop_grace_period: 30s
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+secrets:
+  bot_token:
+    file: ./secrets/bot_token
+
+  google_credentials:
+    file: ./secrets/google_credentials.json
